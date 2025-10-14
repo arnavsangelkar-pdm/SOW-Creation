@@ -15,51 +15,60 @@ export default function IntakePage() {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (discovery: Discovery) => {
+    console.log("Starting SOW generation...", discovery);
     setIsLoading(true);
 
     try {
+      console.log("Sending request to /api/generate");
       const response = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ discovery }),
       });
 
+      console.log("Response status:", response.status);
+
       if (!response.ok) {
-        throw new Error("Failed to generate draft");
+        const errorData = await response.json().catch(() => ({}));
+        console.error("API Error:", errorData);
+        throw new Error(errorData.error || "Failed to generate draft");
       }
 
       const { sow, proposal } = await response.json();
+      console.log("Generation successful, SOW:", sow?.id, "Proposal:", proposal?.id);
 
       // Store in localStorage
-      localStorage.setItem(
-        "sow_workspace",
-        JSON.stringify({
-          sow,
-          proposal,
-          versions: [
-            {
-              id: `v-${Date.now()}`,
-              timestamp: new Date().toISOString(),
-              description: "Initial generation",
-              draft: sow,
-            },
-          ],
-          changes: [],
-          comments: [],
-        })
-      );
+      const workspace = {
+        sow,
+        proposal,
+        versions: [
+          {
+            id: `v-${Date.now()}`,
+            timestamp: new Date().toISOString(),
+            description: "Initial generation",
+            draft: sow,
+          },
+        ],
+        changes: [],
+        comments: [],
+      };
+      
+      console.log("Saving to localStorage...");
+      localStorage.setItem("sow_workspace", JSON.stringify(workspace));
+      console.log("Saved to localStorage successfully");
 
       toast({
         title: "SOW Generated!",
         description: "Your document has been created successfully.",
       });
 
+      console.log("Redirecting to workspace...");
       router.push("/workspace");
-    } catch (error) {
-      console.error("Error:", error);
+    } catch (error: any) {
+      console.error("Error generating SOW:", error);
       toast({
         title: "Generation Failed",
-        description: "Could not generate SOW. Please try again.",
+        description: error.message || "Could not generate SOW. Please try again.",
         variant: "destructive",
       });
     } finally {
