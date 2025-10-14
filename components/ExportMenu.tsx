@@ -28,19 +28,25 @@ export function ExportMenu({ draft }: ExportMenuProps) {
 
       if (!response.ok) throw new Error("Export failed");
 
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${draft.meta.title.replace(/[^a-z0-9]/gi, "_")}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      const html = await response.text();
+      
+      // Open in new window for printing to PDF
+      const printWindow = window.open("", "_blank");
+      if (printWindow) {
+        printWindow.document.write(html);
+        printWindow.document.close();
+        
+        // Wait for content to load then trigger print dialog
+        printWindow.onload = () => {
+          setTimeout(() => {
+            printWindow.print();
+          }, 250);
+        };
+      }
 
       toast({
-        title: "PDF Downloaded",
-        description: "Your document has been exported successfully.",
+        title: "PDF Ready",
+        description: "Use your browser's Print dialog to save as PDF.",
       });
     } catch (error) {
       toast({
@@ -65,20 +71,20 @@ export function ExportMenu({ draft }: ExportMenuProps) {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${draft.meta.title.replace(/[^a-z0-9]/gi, "_")}.docx`;
+      a.download = `${draft.meta.title.replace(/[^a-z0-9]/gi, "_")}.txt`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
 
       toast({
-        title: "DOCX Downloaded",
-        description: "Your document has been exported successfully.",
+        title: "Text File Downloaded",
+        description: "Your document has been exported as a text file.",
       });
     } catch (error) {
       toast({
         title: "Export Failed",
-        description: "Could not generate DOCX. Please try again.",
+        description: "Could not generate text file. Please try again.",
         variant: "destructive",
       });
     }
@@ -116,7 +122,7 @@ export function ExportMenu({ draft }: ExportMenuProps) {
         </DropdownMenuItem>
         <DropdownMenuItem onClick={handleExportDOCX}>
           <File className="h-4 w-4 mr-2" />
-          Export as DOCX
+          Export as Text
         </DropdownMenuItem>
         <DropdownMenuItem onClick={handleExportMarkdown}>
           <FileText className="h-4 w-4 mr-2" />

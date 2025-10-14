@@ -46,11 +46,11 @@ export async function POST(request: Request) {
 </html>
     `;
 
-    // Return HTML that can be converted to PDF by the browser
+    // Return HTML that can be saved as PDF using browser's print to PDF
     return new NextResponse(html, {
       headers: {
-        "Content-Type": "text/html",
-        "Content-Disposition": `attachment; filename="${draft.meta.title.replace(/[^a-z0-9]/gi, "_")}.html"`,
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Disposition": `inline; filename="${draft.meta.title.replace(/[^a-z0-9]/gi, "_")}.html"`,
       },
     });
   } catch (error: any) {

@@ -34,6 +34,7 @@ export default function WorkspacePage() {
     changes,
     loadFromStorage,
     updateSowSection,
+    updateProposalSection,
     addVersion,
     addComment,
     resolveComment,
@@ -80,7 +81,14 @@ export default function WorkspacePage() {
 
   const handleSectionUpdate = (content: any) => {
     if (!activeSectionId) return;
-    updateSowSection(activeSectionId, content);
+    
+    // Update the correct document based on active tab
+    if (activeTab === "proposal") {
+      updateProposalSection(activeSectionId, content);
+    } else {
+      updateSowSection(activeSectionId, content);
+    }
+    
     setLastSaved(new Date());
     
     toast({

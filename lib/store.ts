@@ -13,6 +13,7 @@ interface WorkspaceState extends Workspace {
   setSow: (sow: DocumentDraft) => void;
   setProposal: (proposal: DocumentDraft) => void;
   updateSowSection: (sectionId: string, content: any) => void;
+  updateProposalSection: (sectionId: string, content: any) => void;
   addVersion: (draft: DocumentDraft, description: string) => void;
   addComment: (comment: Omit<Comment, "id" | "timestamp">) => void;
   resolveComment: (commentId: string) => void;
@@ -55,6 +56,19 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
 
     const updatedSow = { ...sow, sections: updatedSections };
     set({ sow: updatedSow });
+    saveWorkspace(get());
+  },
+
+  updateProposalSection: (sectionId, content) => {
+    const { proposal } = get();
+    if (!proposal) return;
+
+    const updatedSections = proposal.sections.map((s) =>
+      s.id === sectionId ? { ...s, content } : s
+    );
+
+    const updatedProposal = { ...proposal, sections: updatedSections };
+    set({ proposal: updatedProposal });
     saveWorkspace(get());
   },
 
