@@ -55,7 +55,7 @@ export default function WorkspacePage() {
     }
   }, [sow, activeSectionId]);
 
-  const currentDraft = activeTab === "sow" ? sow : proposal;
+  const currentDraft = activeTab === "proposal" && proposal ? proposal : sow;
 
   if (!currentDraft) {
     return (
@@ -179,12 +179,23 @@ export default function WorkspacePage() {
         <aside className="w-64 border-r bg-card p-4 overflow-y-auto">
           <div className="space-y-4">
             <div>
-              <h3 className="font-semibold mb-3">Document Outline</h3>
-              <OutlineTree
-                sections={currentDraft.sections}
-                activeSectionId={activeSectionId}
-                onSectionClick={setActiveSectionId}
-              />
+              <h3 className="font-semibold mb-3">
+                {activeTab === "proposal" ? "Proposal Outline" : 
+                 activeTab === "sow" ? "SOW Outline" : 
+                 "Document Outline"}
+              </h3>
+              {(activeTab === "sow" || activeTab === "proposal") && (
+                <OutlineTree
+                  sections={currentDraft.sections}
+                  activeSectionId={activeSectionId}
+                  onSectionClick={setActiveSectionId}
+                />
+              )}
+              {activeTab !== "sow" && activeTab !== "proposal" && (
+                <p className="text-sm text-muted-foreground">
+                  Switch to SOW or Proposal tab to view sections
+                </p>
+              )}
             </div>
 
             <Separator />
@@ -196,7 +207,7 @@ export default function WorkspacePage() {
                   variant="outline"
                   size="sm"
                   className="w-full justify-start"
-                  onClick={() => setActiveSectionId("timeline")}
+                  onClick={() => setActiveTab("timeline")}
                 >
                   View Timeline
                 </Button>
@@ -204,9 +215,17 @@ export default function WorkspacePage() {
                   variant="outline"
                   size="sm"
                   className="w-full justify-start"
-                  onClick={() => setActiveSectionId("pricing")}
+                  onClick={() => setActiveTab("pricing")}
                 >
                   View Pricing
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full justify-start"
+                  onClick={() => setActiveTab("versions")}
+                >
+                  View Versions
                 </Button>
               </div>
             </div>
@@ -244,17 +263,20 @@ export default function WorkspacePage() {
               </TabsContent>
 
               <TabsContent value="proposal" className="mt-0">
-                {proposal && activeSection ? (
-                  <Card className="p-6">
-                    <EditorPane
-                      section={
-                        proposal.sections.find((s) => s.id === activeSectionId) ||
-                        activeSection
-                      }
-                      onUpdate={handleSectionUpdate}
-                      readOnly={currentDraft.status === "Approved"}
-                    />
-                  </Card>
+                {proposal ? (
+                  activeSectionId && proposal.sections.find((s) => s.id === activeSectionId) ? (
+                    <Card className="p-6">
+                      <EditorPane
+                        section={proposal.sections.find((s) => s.id === activeSectionId)!}
+                        onUpdate={handleSectionUpdate}
+                        readOnly={proposal.status === "Approved"}
+                      />
+                    </Card>
+                  ) : (
+                    <div className="text-center py-12 text-muted-foreground">
+                      Select a section to edit
+                    </div>
+                  )
                 ) : (
                   <div className="text-center py-12 text-muted-foreground">
                     Proposal not available
