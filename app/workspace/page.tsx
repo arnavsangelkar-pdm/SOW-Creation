@@ -56,6 +56,23 @@ export default function WorkspacePage() {
     }
   }, [sow, activeSectionId]);
 
+  // Reset active section when switching tabs
+  useEffect(() => {
+    if (activeTab === "proposal" && proposal && proposal.sections.length > 0) {
+      // Check if current section exists in proposal, otherwise select first section
+      const sectionExists = proposal.sections.find(s => s.id === activeSectionId);
+      if (!sectionExists) {
+        setActiveSectionId(proposal.sections[0].id);
+      }
+    } else if (activeTab === "sow" && sow && sow.sections.length > 0) {
+      // Check if current section exists in SOW, otherwise select first section
+      const sectionExists = sow.sections.find(s => s.id === activeSectionId);
+      if (!sectionExists) {
+        setActiveSectionId(sow.sections[0].id);
+      }
+    }
+  }, [activeTab, sow, proposal, activeSectionId]);
+
   const currentDraft = activeTab === "proposal" && proposal ? proposal : sow;
 
   if (!currentDraft) {
@@ -272,12 +289,12 @@ export default function WorkspacePage() {
 
               <TabsContent value="proposal" className="mt-0">
                 {proposal ? (
-                  activeSectionId && proposal.sections.find((s) => s.id === activeSectionId) ? (
+                  activeSection ? (
                     <Card className="p-6">
                       <EditorPane
-                        section={proposal.sections.find((s) => s.id === activeSectionId)!}
+                        section={activeSection}
                         onUpdate={handleSectionUpdate}
-                        readOnly={proposal.status === "Approved"}
+                        readOnly={currentDraft.status === "Approved"}
                       />
                     </Card>
                   ) : (
